@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './ProductsPage.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts, addNewProduct } from './redux/productsSlice';
+import { fetchProducts } from './redux/productsSlice';
 
 const ProductsPage = () => {
   const { category } = useParams();
@@ -24,7 +24,7 @@ const ProductsPage = () => {
     return <p>Error: {error}</p>;
   }
 
-  const addNewProductHandler = () => {
+  const addNewProduct = () => {
     if (newProductTitle && newProductTitle.trim() !== "") {
       axios.post(`https://dummyjson.com/products/add`, {
         title: newProductTitle,
@@ -32,9 +32,8 @@ const ProductsPage = () => {
         .then((response) => {
           const data = response.data;
           console.log(data);
-          dispatch(addNewProduct(data));
-          setShowAddProductForm(false);
-          setNewProductTitle('');
+          const productDetailsUrl = `/products/${data.id}`;
+          window.location.href = productDetailsUrl;
         })
         .catch((error) => {
           console.error('Error adding new product:', error);
@@ -50,7 +49,7 @@ const ProductsPage = () => {
       <ul>
         {products.map((product) => (
           <li key={product.id}>
-            <Link to={'/products/${product.id}'}>{product.title}</Link>
+            <Link to={`/products/${product.id}`}>{product.title}</Link>
           </li>
         ))}
       </ul>
@@ -68,7 +67,7 @@ const ProductsPage = () => {
               required
             />
           </label>
-          <button className='btn' onClick={addNewProductHandler}>Submit</button>
+          <button className='btn' onClick={addNewProduct}>Submit</button>
         </div>
       )}
     </div>

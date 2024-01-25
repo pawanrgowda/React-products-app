@@ -22,7 +22,7 @@ const productsSlice = createSlice({
   },
   reducers: {
     addNewProduct: (state, action) => {
-      state.products = [...state.products, action.payload];
+      state.products.push(action.payload);
       state.total += 1;
     },
   },
@@ -32,11 +32,7 @@ const productsSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.products = action.payload.products;
-        state.total = action.payload.total;
-        state.skip = action.payload.skip;
-        state.limit = action.payload.limit;
+        Object.assign(state, action.payload, { status: 'succeeded' });
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';

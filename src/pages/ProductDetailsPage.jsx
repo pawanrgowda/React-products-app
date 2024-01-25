@@ -1,27 +1,38 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProducts, addNewProduct } from './redux/productsSlice';
 import Slider from 'react-slick';
-import axios from 'axios'; 
 import './ProductDetailsPage.css';
 
 const ProductDetailsPage = () => {
   const { productId } = useParams();
   const [productDetails, setProductDetails] = useState(null);
+  const dispatch = useDispatch();
+  const products = useSelector((state) => state.products.products);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const response = await axios.get(`https://dummyjson.com/products/${productId}`);
-        const data = response.data;
-        console.log('Product Details API Response:', data);
-        setProductDetails(data);
+        // making sure that the store is up-to-date
+        await dispatch(fetchProducts());
+
+        // finding the product details from the store
+        const foundProduct = products.find(product => product.id === parseInt(productId, 10));
+
+        if (foundProduct) {
+          setProductDetails(foundProduct);
+        } else {
+          console.log('error');
+          dispatch(addNewProduct(data));
+        }
       } catch (error) {
         console.error('Error fetching product details:', error);
       }
     };
 
     fetchProductDetails();
-  }, [productId]);
+  }, [dispatch, productId, products]);
 
   if (!productDetails) {
     return <p>Loading...</p>;

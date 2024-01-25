@@ -8,7 +8,7 @@ import { fetchProducts } from './redux/productsSlice';
 const ProductsPage = () => {
   const { category } = useParams();
   const dispatch = useDispatch();
-  const { products, total, skip, limit, status, error } = useSelector((state) => state.products);
+  const { products } = useSelector((state) => state.products);
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const [newProductTitle, setNewProductTitle] = useState('');
 
@@ -16,30 +16,25 @@ const ProductsPage = () => {
     dispatch(fetchProducts(category));
   }, [dispatch, category]);
 
-  if (status === 'loading') {
-    return <p>Loading...</p>;
-  }
-
-  if (status === 'failed') {
-    return <p>Error: {error}</p>;
-  }
-
-  const addNewProduct = () => {
-    if (newProductTitle && newProductTitle.trim() !== "") {
-      axios.post(`https://dummyjson.com/products/add`, {
-        title: newProductTitle,
-      })
-        .then((response) => {
-          const data = response.data;
-          console.log(data);
-          const productDetailsUrl = `/products/${data.id}`;
-          window.location.href = productDetailsUrl;
-        })
-        .catch((error) => {
-          console.error('Error adding new product:', error);
+  const addNewProduct = async () => {
+    try {
+      if (newProductTitle && newProductTitle.trim() !== "") {
+        const response = await axios.post(`https://dummyjson.com/products/add`, {
+          title: newProductTitle,
         });
-    } else {
-      alert("Title cannot be empty");
+        const data = response.data;
+
+        // Update the state with the newly added product
+        dispatch({ type: 'products/addNewProduct', payload: data });
+
+        // Clear the form and hide it
+        setNewProductTitle('');
+        setShowAddProductForm(false);
+      } else {
+        alert("Title cannot be empty");
+      }
+    } catch (error) {
+      console.error('Error adding new product:', error);
     }
   };
 
@@ -55,7 +50,6 @@ const ProductsPage = () => {
       </ul>
       <button onClick={() => setShowAddProductForm(true)}>Add New Product</button>
 
-      {/* Add form */}
       {showAddProductForm && (
         <div>
           <label>
